@@ -1,0 +1,196 @@
+[
+  {
+    "id": "TC1",
+    "ac": "AC1",
+    "type": "auto",
+    "text": "Given a valid X-Square-Access-Token header, when any tool is called, then the outbound Square request carries Authorization: Bearer <token> and no server-side stored credential is used.",
+    "tests": ["tests/test_api_client.py::test_access_token_forwarded_as_bearer_auth"]
+  },
+  {
+    "id": "TC2",
+    "ac": "AC2",
+    "type": "auto",
+    "text": "Given no X-Square-Access-Token header, when POST /mcp tools/call is sent, then the response is 401 listing the required header and zero outbound Square calls are made.",
+    "tests": ["tests/test_middleware.py::test_missing_access_token_returns_401_on_mcp_endpoint"]
+  },
+  {
+    "id": "TC3",
+    "ac": "AC3",
+    "type": "auto",
+    "text": "Given X-Square-Environment: sandbox, when any tool is called, then the outbound request targets https://connect.squareupsandbox.com/v2; given the header is omitted or 'production', it targets https://connect.squareup.com/v2.",
+    "tests": ["tests/test_api_client.py::test_environment_header_selects_base_url"]
+  },
+  {
+    "id": "TC4",
+    "ac": "AC4",
+    "type": "auto",
+    "text": "Given X-Square-Environment set to a value other than production or sandbox, when any tool is called, then it returns an invalid_argument error and makes no outbound call.",
+    "tests": ["tests/test_tools.py::test_invalid_environment_value_returns_invalid_argument"]
+  },
+  {
+    "id": "TC5",
+    "ac": "AC5",
+    "type": "auto",
+    "text": "Given two concurrent tools/call requests with two different tokens/environments, when both run at the same time, then each resolves a SquareClient carrying only its own token and base URL.",
+    "tests": ["tests/test_middleware.py::test_concurrent_calls_do_not_leak_credentials_across_tenants"]
+  },
+  {
+    "id": "TC6",
+    "ac": "AC6",
+    "type": "auto",
+    "text": "GET /health returns 200 {\"status\": \"ok\", ...} with no Square credential configured anywhere.",
+    "tests": ["tests/test_middleware.py::test_health_check_does_not_require_square_credential"]
+  },
+  {
+    "id": "TC7",
+    "ac": "AC7",
+    "type": "auto",
+    "text": "A tools/list call with no prior initialize session succeeds with HTTP 200 (stateless Streamable HTTP).",
+    "tests": ["tests/test_tools.py::test_tools_list_succeeds_without_prior_initialize_session"]
+  },
+  {
+    "id": "TC8",
+    "ac": "AC8",
+    "type": "auto",
+    "text": "square_list_locations calls GET /v2/locations and returns locations with id, name, and status.",
+    "tests": ["tests/test_tools.py::test_list_locations_returns_locations"]
+  },
+  {
+    "id": "TC9",
+    "ac": "AC9",
+    "type": "auto",
+    "text": "square_list_customers with no arguments calls GET /v2/customers and returns a page of customers plus a cursor when more results exist.",
+    "tests": ["tests/test_tools.py::test_list_customers_returns_page_and_cursor"]
+  },
+  {
+    "id": "TC10",
+    "ac": "AC10",
+    "type": "auto",
+    "text": "square_search_customers with email_address and given_name builds a POST /v2/customers/search filter containing exactly those fields and returns the matches.",
+    "tests": ["tests/test_tools.py::test_search_customers_builds_filter_from_provided_fields"]
+  },
+  {
+    "id": "TC11",
+    "ac": "AC11",
+    "type": "auto",
+    "text": "square_get_customer with an existing customer_id calls GET /v2/customers/{customer_id} and returns that customer's detail.",
+    "tests": ["tests/test_tools.py::test_get_customer_returns_detail_for_existing_id"]
+  },
+  {
+    "id": "TC12",
+    "ac": "AC12",
+    "type": "auto",
+    "text": "square_get_customer with a non-existent customer_id returns a not_found error envelope, not an unhandled exception.",
+    "tests": ["tests/test_tools.py::test_get_customer_returns_not_found_for_missing_id"]
+  },
+  {
+    "id": "TC13",
+    "ac": "AC13",
+    "type": "auto",
+    "text": "square_list_catalog_items calls GET /v2/catalog/list?types=ITEM (with cursor when provided) and returns catalog items.",
+    "tests": ["tests/test_tools.py::test_list_catalog_items_calls_list_endpoint_with_item_type"]
+  },
+  {
+    "id": "TC14",
+    "ac": "AC14",
+    "type": "auto",
+    "text": "square_get_catalog_item returns the object for an existing object_id, and not_found for a non-existent one.",
+    "tests": ["tests/test_tools.py::test_get_catalog_item_existing_and_not_found"]
+  },
+  {
+    "id": "TC15",
+    "ac": "AC15",
+    "type": "auto",
+    "text": "square_search_orders builds POST /v2/orders/search with exactly the filters provided (location_ids, state, date filters, cursor) and returns matching orders.",
+    "tests": ["tests/test_tools.py::test_search_orders_builds_filter_from_provided_fields"]
+  },
+  {
+    "id": "TC16",
+    "ac": "AC16",
+    "type": "auto",
+    "text": "square_get_order returns the order for an existing order_id, and not_found for a non-existent one.",
+    "tests": ["tests/test_tools.py::test_get_order_existing_and_not_found"]
+  },
+  {
+    "id": "TC17",
+    "ac": "AC17",
+    "type": "auto",
+    "text": "square_list_payments passes exactly the query parameters provided (location_id, begin_time, end_time, cursor) to GET /v2/payments.",
+    "tests": ["tests/test_tools.py::test_list_payments_passes_provided_filters_only"]
+  },
+  {
+    "id": "TC18",
+    "ac": "AC18",
+    "type": "auto",
+    "text": "square_get_payment returns the payment for an existing payment_id, and not_found for a non-existent one.",
+    "tests": ["tests/test_tools.py::test_get_payment_existing_and_not_found"]
+  },
+  {
+    "id": "TC19",
+    "ac": "AC19",
+    "type": "auto",
+    "text": "square_get_inventory_count calls GET /v2/inventory/{catalog_object_id}, passing location_ids as a query filter when provided, and returns current stock counts.",
+    "tests": ["tests/test_tools.py::test_get_inventory_count_returns_counts"]
+  },
+  {
+    "id": "TC20",
+    "ac": "AC20",
+    "type": "auto",
+    "text": "square_create_refund without an idempotency_key generates one, calls POST /v2/refunds, and returns the created refund (id, status, amount_money).",
+    "tests": ["tests/test_tools.py::test_create_refund_generates_idempotency_key_when_omitted"]
+  },
+  {
+    "id": "TC21",
+    "ac": "AC21",
+    "type": "auto",
+    "text": "Two calls to square_create_refund with the same idempotency_key and arguments produce the same refund result; Square is not treated as having processed two refunds.",
+    "tests": ["tests/test_tools.py::test_create_refund_is_idempotent_on_repeated_key"]
+  },
+  {
+    "id": "TC22",
+    "ac": "AC22",
+    "type": "auto",
+    "text": "Square rejecting a refund (e.g. amount exceeds refundable balance) returns a structured error with Square's upstream code/message, not an unhandled exception.",
+    "tests": ["tests/test_tools.py::test_create_refund_maps_square_rejection_to_structured_error"]
+  },
+  {
+    "id": "TC23",
+    "ac": "AC23",
+    "type": "auto",
+    "text": "A representative 4xx and a representative 5xx response from Square each map to the correct envelope code; a 429 on a read call is retried honoring Retry-After before giving up.",
+    "tests": [
+      "tests/test_api_client.py::test_4xx_maps_to_expected_error_code",
+      "tests/test_api_client.py::test_5xx_maps_to_upstream_error",
+      "tests/test_api_client.py::test_429_retries_honoring_retry_after_then_gives_up"
+    ]
+  },
+  {
+    "id": "TC24",
+    "ac": "AC24",
+    "type": "manual",
+    "text": "README documents all 12 tools and both authentication headers.",
+    "steps": [
+      "Open README.md on the work branch",
+      "Find the 'Tool List' table",
+      "Find the 'Authentication headers' section"
+    ],
+    "expect": "Tool List has 12 rows (one per tool in the Change list) with description and key parameters in the sibling-pattern shape; Authentication headers documents X-Square-Access-Token (required) and X-Square-Environment (optional, default production).",
+    "result": "untested",
+    "evidence": ""
+  },
+  {
+    "id": "TC25",
+    "ac": "AC20",
+    "type": "manual",
+    "source": "design",
+    "text": "End-to-end confirmation against a real Square sandbox account (optional, not blocking per SOP -- missing a vendor test account is not a blocker).",
+    "steps": [
+      "Obtain a real Square sandbox access token with a test location, customer, catalog item, and a completed test payment",
+      "Call square_list_locations, square_get_customer, square_get_payment, then square_create_refund for a small amount against that payment",
+      "Check the Square sandbox dashboard for the resulting refund"
+    ],
+    "expect": "Each read tool returns data matching the sandbox dashboard; the refund appears against the payment with the requested amount.",
+    "result": "blocked",
+    "evidence": "No real Square sandbox account is available to DEV01 at design time. Not a blocker per SOP (missing vendor test account does not block delivery)."
+  }
+]
