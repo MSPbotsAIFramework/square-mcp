@@ -4,154 +4,198 @@
     "ac": "AC1",
     "type": "auto",
     "text": "Given a valid X-Square-Access-Token header, when any tool is called, then the outbound Square request carries Authorization: Bearer <token> and no server-side stored credential is used.",
-    "tests": ["tests/test_api_client.py::test_access_token_forwarded_as_bearer_auth"]
+    "tests": ["tests/test_api_client.py::test_access_token_forwarded_as_bearer_auth"],
+    "result": "pass",
+    "evidence": "pytest -v: tests/test_api_client.py::test_access_token_forwarded_as_bearer_auth PASSED (dev/PRD-21318 @ local run, uv run pytest, 30 passed in 1.21s)."
   },
   {
     "id": "TC2",
     "ac": "AC2",
     "type": "auto",
     "text": "Given no X-Square-Access-Token header, when POST /mcp tools/call is sent, then the response is 401 listing the required header and zero outbound Square calls are made.",
-    "tests": ["tests/test_middleware.py::test_missing_access_token_returns_401_on_mcp_endpoint"]
+    "tests": ["tests/test_middleware.py::test_missing_access_token_returns_401_on_mcp_endpoint"],
+    "result": "pass",
+    "evidence": "pytest PASSED. Also confirmed against the real Docker image: `curl -i -X POST /mcp` with no credential header returned `HTTP/1.1 401 Unauthorized` and body `{\"error\":\"Missing credentials\",...,\"required_headers\":[\"X-Square-Access-Token\"]}`."
   },
   {
     "id": "TC3",
     "ac": "AC3",
     "type": "auto",
     "text": "Given X-Square-Environment: sandbox, when any tool is called, then the outbound request targets https://connect.squareupsandbox.com/v2; given the header is omitted or 'production', it targets https://connect.squareup.com/v2.",
-    "tests": ["tests/test_api_client.py::test_environment_header_selects_base_url"]
+    "tests": ["tests/test_api_client.py::test_environment_header_selects_base_url"],
+    "result": "pass",
+    "evidence": "pytest PASSED."
   },
   {
     "id": "TC4",
     "ac": "AC4",
     "type": "auto",
     "text": "Given X-Square-Environment set to a value other than production or sandbox, when any tool is called, then it returns an invalid_argument error and makes no outbound call.",
-    "tests": ["tests/test_tools.py::test_invalid_environment_value_returns_invalid_argument"]
+    "tests": ["tests/test_tools.py::test_invalid_environment_value_returns_invalid_argument"],
+    "result": "pass",
+    "evidence": "pytest PASSED. Also confirmed against the real Docker image: `X-Square-Environment: bogus` returned `{\"error\":{\"code\":\"invalid_argument\",\"message\":\"Invalid X-Square-Environment value: 'bogus'; must be 'production' or 'sandbox'.\",\"retryable\":false}}` with zero outbound calls."
   },
   {
     "id": "TC5",
     "ac": "AC5",
     "type": "auto",
     "text": "Given two concurrent tools/call requests with two different tokens/environments, when both run at the same time, then each resolves a SquareClient carrying only its own token and base URL.",
-    "tests": ["tests/test_middleware.py::test_concurrent_calls_do_not_leak_credentials_across_tenants"]
+    "tests": ["tests/test_middleware.py::test_concurrent_calls_do_not_leak_credentials_across_tenants"],
+    "result": "pass",
+    "evidence": "pytest PASSED: two concurrent /mcp calls (tenant-a-token/production, tenant-b-token/sandbox) each hit their own base URL with only their own Authorization header."
   },
   {
     "id": "TC6",
     "ac": "AC6",
     "type": "auto",
     "text": "GET /health returns 200 {\"status\": \"ok\", ...} with no Square credential configured anywhere.",
-    "tests": ["tests/test_middleware.py::test_health_check_does_not_require_square_credential"]
+    "tests": ["tests/test_middleware.py::test_health_check_does_not_require_square_credential"],
+    "result": "pass",
+    "evidence": "pytest PASSED. Also confirmed against the real Docker image: `curl http://127.0.0.1:18080/health` -> `HTTP 200`, body `{\"status\":\"ok\",\"transport\":\"http\",\"auth_mode\":\"gateway\"}`."
   },
   {
     "id": "TC7",
     "ac": "AC7",
     "type": "auto",
     "text": "A tools/list call with no prior initialize session succeeds with HTTP 200 (stateless Streamable HTTP).",
-    "tests": ["tests/test_tools.py::test_tools_list_succeeds_without_prior_initialize_session"]
+    "tests": ["tests/test_tools.py::test_tools_list_succeeds_without_prior_initialize_session"],
+    "result": "pass",
+    "evidence": "pytest PASSED. Also confirmed against the real Docker image: a bare `tools/list` POST with a credential header but no prior `initialize` call returned HTTP 200 with the full 12-tool list."
   },
   {
     "id": "TC8",
     "ac": "AC8",
     "type": "auto",
     "text": "square_list_locations calls GET /v2/locations and returns locations with id, name, and status.",
-    "tests": ["tests/test_tools.py::test_list_locations_returns_locations"]
+    "tests": ["tests/test_tools.py::test_list_locations_returns_locations"],
+    "result": "pass",
+    "evidence": "pytest PASSED."
   },
   {
     "id": "TC9",
     "ac": "AC9",
     "type": "auto",
     "text": "square_list_customers with no arguments calls GET /v2/customers and returns a page of customers plus a cursor when more results exist.",
-    "tests": ["tests/test_tools.py::test_list_customers_returns_page_and_cursor"]
+    "tests": ["tests/test_tools.py::test_list_customers_returns_page_and_cursor"],
+    "result": "pass",
+    "evidence": "pytest PASSED."
   },
   {
     "id": "TC10",
     "ac": "AC10",
     "type": "auto",
     "text": "square_search_customers with email_address and given_name builds a POST /v2/customers/search filter containing exactly those fields and returns the matches.",
-    "tests": ["tests/test_tools.py::test_search_customers_builds_filter_from_provided_fields"]
+    "tests": ["tests/test_tools.py::test_search_customers_builds_filter_from_provided_fields"],
+    "result": "pass",
+    "evidence": "pytest PASSED; asserted the sent JSON body's query.filter equals exactly {email_address, given_name}."
   },
   {
     "id": "TC11",
     "ac": "AC11",
     "type": "auto",
     "text": "square_get_customer with an existing customer_id calls GET /v2/customers/{customer_id} and returns that customer's detail.",
-    "tests": ["tests/test_tools.py::test_get_customer_returns_detail_for_existing_id"]
+    "tests": ["tests/test_tools.py::test_get_customer_returns_detail_for_existing_id"],
+    "result": "pass",
+    "evidence": "pytest PASSED."
   },
   {
     "id": "TC12",
     "ac": "AC12",
     "type": "auto",
     "text": "square_get_customer with a non-existent customer_id returns a not_found error envelope, not an unhandled exception.",
-    "tests": ["tests/test_tools.py::test_get_customer_returns_not_found_for_missing_id"]
+    "tests": ["tests/test_tools.py::test_get_customer_returns_not_found_for_missing_id"],
+    "result": "pass",
+    "evidence": "pytest PASSED."
   },
   {
     "id": "TC13",
     "ac": "AC13",
     "type": "auto",
     "text": "square_list_catalog_items calls GET /v2/catalog/list?types=ITEM (with cursor when provided) and returns catalog items.",
-    "tests": ["tests/test_tools.py::test_list_catalog_items_calls_list_endpoint_with_item_type"]
+    "tests": ["tests/test_tools.py::test_list_catalog_items_calls_list_endpoint_with_item_type"],
+    "result": "pass",
+    "evidence": "pytest PASSED; asserted outbound query param types=ITEM."
   },
   {
     "id": "TC14",
     "ac": "AC14",
     "type": "auto",
     "text": "square_get_catalog_item returns the object for an existing object_id, and not_found for a non-existent one.",
-    "tests": ["tests/test_tools.py::test_get_catalog_item_existing_and_not_found"]
+    "tests": ["tests/test_tools.py::test_get_catalog_item_existing_and_not_found"],
+    "result": "pass",
+    "evidence": "pytest PASSED (both the existing-id and missing-id branches)."
   },
   {
     "id": "TC15",
     "ac": "AC15",
     "type": "auto",
     "text": "square_search_orders builds POST /v2/orders/search with exactly the filters provided (location_ids, state, date filters, cursor) and returns matching orders.",
-    "tests": ["tests/test_tools.py::test_search_orders_builds_filter_from_provided_fields"]
+    "tests": ["tests/test_tools.py::test_search_orders_builds_filter_from_provided_fields"],
+    "result": "pass",
+    "evidence": "pytest PASSED; asserted sent body's location_ids, query.filter.state_filter, query.filter.date_time_filter.created_at, and cursor."
   },
   {
     "id": "TC16",
     "ac": "AC16",
     "type": "auto",
     "text": "square_get_order returns the order for an existing order_id, and not_found for a non-existent one.",
-    "tests": ["tests/test_tools.py::test_get_order_existing_and_not_found"]
+    "tests": ["tests/test_tools.py::test_get_order_existing_and_not_found"],
+    "result": "pass",
+    "evidence": "pytest PASSED."
   },
   {
     "id": "TC17",
     "ac": "AC17",
     "type": "auto",
     "text": "square_list_payments passes exactly the query parameters provided (location_id, begin_time, end_time, cursor) to GET /v2/payments.",
-    "tests": ["tests/test_tools.py::test_list_payments_passes_provided_filters_only"]
+    "tests": ["tests/test_tools.py::test_list_payments_passes_provided_filters_only"],
+    "result": "pass",
+    "evidence": "pytest PASSED; asserted only location_id was present in the sent query params, begin_time/end_time/cursor absent."
   },
   {
     "id": "TC18",
     "ac": "AC18",
     "type": "auto",
     "text": "square_get_payment returns the payment for an existing payment_id, and not_found for a non-existent one.",
-    "tests": ["tests/test_tools.py::test_get_payment_existing_and_not_found"]
+    "tests": ["tests/test_tools.py::test_get_payment_existing_and_not_found"],
+    "result": "pass",
+    "evidence": "pytest PASSED."
   },
   {
     "id": "TC19",
     "ac": "AC19",
     "type": "auto",
     "text": "square_get_inventory_count calls GET /v2/inventory/{catalog_object_id}, passing location_ids as a query filter when provided, and returns current stock counts.",
-    "tests": ["tests/test_tools.py::test_get_inventory_count_returns_counts"]
+    "tests": ["tests/test_tools.py::test_get_inventory_count_returns_counts"],
+    "result": "pass",
+    "evidence": "pytest PASSED; asserted outbound query param location_ids=loc_1."
   },
   {
     "id": "TC20",
     "ac": "AC20",
     "type": "auto",
     "text": "square_create_refund without an idempotency_key generates one, calls POST /v2/refunds, and returns the created refund (id, status, amount_money).",
-    "tests": ["tests/test_tools.py::test_create_refund_generates_idempotency_key_when_omitted"]
+    "tests": ["tests/test_tools.py::test_create_refund_generates_idempotency_key_when_omitted"],
+    "result": "pass",
+    "evidence": "pytest PASSED; asserted a non-empty idempotency_key was generated and merged into the sent body."
   },
   {
     "id": "TC21",
     "ac": "AC21",
     "type": "auto",
     "text": "Two calls to square_create_refund with the same idempotency_key and arguments produce the same refund result; Square is not treated as having processed two refunds.",
-    "tests": ["tests/test_tools.py::test_create_refund_is_idempotent_on_repeated_key"]
+    "tests": ["tests/test_tools.py::test_create_refund_is_idempotent_on_repeated_key"],
+    "result": "pass",
+    "evidence": "pytest PASSED; both calls sent the same idempotency_key and the tool returned identical text both times (client-side passthrough; Square's own idempotency guarantee is the mocked server's contract here, per Risks & dependencies)."
   },
   {
     "id": "TC22",
     "ac": "AC22",
     "type": "auto",
     "text": "Square rejecting a refund (e.g. amount exceeds refundable balance) returns a structured error with Square's upstream code/message, not an unhandled exception.",
-    "tests": ["tests/test_tools.py::test_create_refund_maps_square_rejection_to_structured_error"]
+    "tests": ["tests/test_tools.py::test_create_refund_maps_square_rejection_to_structured_error"],
+    "result": "pass",
+    "evidence": "pytest PASSED; asserted code=invalid_argument and Square's detail text surfaced in message."
   },
   {
     "id": "TC23",
@@ -162,7 +206,9 @@
       "tests/test_api_client.py::test_4xx_maps_to_expected_error_code",
       "tests/test_api_client.py::test_5xx_maps_to_upstream_error",
       "tests/test_api_client.py::test_429_retries_honoring_retry_after_then_gives_up"
-    ]
+    ],
+    "result": "pass",
+    "evidence": "pytest PASSED for all three; also test_429_succeeds_after_one_retry and test_post_is_never_retried_on_5xx confirm the retry-only-GET policy."
   },
   {
     "id": "TC24",
@@ -175,8 +221,8 @@
       "Find the 'Authentication headers' section"
     ],
     "expect": "Tool List has 12 rows (one per tool in the Change list) with description and key parameters in the sibling-pattern shape; Authentication headers documents X-Square-Access-Token (required) and X-Square-Environment (optional, default production).",
-    "result": "untested",
-    "evidence": ""
+    "result": "pass",
+    "evidence": "README.md 'Tool List' table has 12 rows (grep -c on table rows starting with `| \\`square_` = 12), matching the 12 registered tools confirmed by tests/test_tools.py::test_tools_list_snapshot. 'Authentication headers' section (README.md lines 104-109) documents X-Square-Access-Token (Required: Yes) and X-Square-Environment (Required: No, default production)."
   },
   {
     "id": "TC25",
@@ -191,6 +237,6 @@
     ],
     "expect": "Each read tool returns data matching the sandbox dashboard; the refund appears against the payment with the requested amount.",
     "result": "blocked",
-    "evidence": "No real Square sandbox account is available to DEV01 at design time. Not a blocker per SOP (missing vendor test account does not block delivery)."
+    "evidence": "No real Square sandbox account is available to DEV01 at dev time either. Not a blocker per SOP (missing vendor test account does not block delivery). As a substitute, the dev leg ran a live network smoke test against production Square with a placeholder token: `square_list_locations` with `X-Square-Access-Token: placeholder-token` reached https://connect.squareup.com/v2/locations for real and received Square's own 401, which this service mapped to the structured envelope {\"error\":{\"code\":\"unauthorized\",...}} -- confirming the full request path (header -> client -> real Square endpoint -> error mapping) works end-to-end; only the token's validity could not be exercised."
   }
 ]
